@@ -107,7 +107,7 @@ const SearchScreen = () => {
       <View style={searchStyles.resultsSection}>
         <View style={searchStyles.resultsHeader}>
           <Text style={searchStyles.resultsTitle}>
-            {searchQuery ? Results for "${searchQuery}" : "Popular Recipes"}
+            {searchQuery ? 'Results for "${searchQuery}"' : "Popular Recipes"}
           </Text>
           <Text style={searchStyles.resultsCount}>{recipes.length} found</Text>
         </View>
