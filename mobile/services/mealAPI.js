@@ -111,7 +111,10 @@ export const MealAPI = {
 
     // extract instructions
     const instructions = meal.strInstructions
-      ? meal.strInstructions.split(/\r?\n/).filter((step) => step.trim())
+      ? meal.strInstructions.split(/\r?\n/).filter((step) => {
+          const trimmed = step.trim();
+          return trimmed.length > 3 && !/^step\s*\d+$/i.test(trimmed);
+        })
       : [];
 
     return {
