@@ -181,6 +181,12 @@ export const recipeDetailStyles = StyleSheet.create({
   webview: {
     flex: 1,
   },
+  playOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.3)",
+  },
   ingredientsGrid: {
     gap: 12,
   },

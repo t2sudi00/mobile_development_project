@@ -1,82 +1,83 @@
-import express from "express" 
+import express from "express";
+import { eq, and } from "drizzle-orm";
 import { ENV } from "./config/env.js";
-import { db } from "./config/db.js"
-import { favouritesTable } from "./db/schema.js";
+import { db } from "./config/db.js";
+import { favoritesTable } from "./db/schema.js";
 import job from "./config/cron.js";
 
-const app = express()
+const app = express();
 const PORT = ENV.PORT || 5001;
 
 if (ENV.NODE_ENV === "production") job.start();
 
-app.use(express.json())
+app.use(express.json());
 
 app.get("/api/health", (req, res) => {
-    res.status(200).json({ success: true });
+  res.status(200).json({ success: true });
 });
 
+app.post("/api/favorites", async (req, res) => {
+  try {
+    const { userId, recipeId, title, image, cookTime, servings } = req.body;
 
+    if (!userId || !recipeId || !title) {
+      return res.status(400).json({ erroe: "Missing required fields" });
+    }
 
-app.post("/api/favourites", async (req, res) => {
-    try {
-        const { userId, recipeId, title, image, cookTime, servings } = req.body;
+    const newFavourite = await db
+      .insert(favoritesTable)
+      .values({
+        userId,
+        recipeId,
+        title,
+        image,
+        cookTime,
+        servings,
+      })
+      .returning();
 
-        if (!userId || !recipeId || !title) {
-            return res.status(400).json({ erroe: "Missing required fields" });
-        }
-
-        const newFavourite = await db
-            .insert(favouritesTable)
-            .values({
-                userId,
-                recipeId,
-                title,
-                image,
-                cookTime,
-                servings
-            })
-            .returning();
-        
-        res.status(201).json(newFavourite[0])
-    } catch (error) {
-        console.log("Error adding favourite", error)
-        res.status(500).json({ error: "Something went wrong" });
-     }
+    res.status(201).json(newFavourite[0]);
+  } catch (error) {
+    console.log("Error adding favourite", error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
 });
 
-app.get("/api/favourites/:userId", async (req, res) => {
-    try {
-        const { userId } = req.params;
+app.get("/api/favorites/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
 
-        const userFavourites = await db
-            .select()
-            .from(favouritesTable)
-            .where(eq(favouritesTable.userId, userId))
-        
-        res.json(userFavourites)
+    const userfavorites = await db
+      .select()
+      .from(favoritesTable)
+      .where(eq(favoritesTable.userId, userId));
 
-    } catch (error) {
-        console.log("Error fetching the favourites", error);
-        res.status(500).json({ error: "Something went wrong" }); 
-    }
-})
+    res.json(userfavorites);
+  } catch (error) {
+    console.log("Error fetching the favorites", error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+});
 
-app.delete("/api/favourites/:userId/:recipeId", async (req, res) => {
-    try {
-        const { userId, recipeId } = req.params
-        
-        await db
-            .delete(favouritesTable)
-            .where(
-            and(eq(favouritesTable.userId, userId), eq(favouritesTable.recipeId, parseInt(recipeId)))
-        );
+app.delete("/api/favorites/:userId/:recipeId", async (req, res) => {
+  try {
+    const { userId, recipeId } = req.params;
 
-        res.status(200).json({ message: "Favourite removed successfully" });
-    } catch (error) {
-       console.log("Error removing a favourite", error);
-       res.status(500).json({ error: "Something went wrong" }); 
-    }
-})
-app.listen(PORT , () => {
+    await db
+      .delete(favoritesTable)
+      .where(
+        and(
+          eq(favoritesTable.userId, userId),
+          eq(favoritesTable.recipeId, parseInt(recipeId))
+        )
+      );
+
+    res.status(200).json({ message: "Favourite removed successfully" });
+  } catch (error) {
+    console.log("Error removing a favourite", error);
+    res.status(500).json({ error: "Something went wrong" });
+  }
+});
+app.listen(PORT, "0.0.0.0", () => {
   console.log("Server is running123 on PORT:", PORT);
-})
+});

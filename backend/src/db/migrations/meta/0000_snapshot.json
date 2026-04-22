@@ -4,8 +4,8 @@
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.favourites": {
-      "name": "favourites",
+    "public.favorites": {
+      "name": "favorites",
       "schema": "",
       "columns": {
         "id": {
