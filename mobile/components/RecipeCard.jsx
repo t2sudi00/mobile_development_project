@@ -11,8 +11,7 @@ export default function RecipeCard({ recipe }) {
   return (
     <TouchableOpacity
       style={recipeCardStyles.container}
-      onPress={() => router.push('/recipe/${recipe.id}')}
-      activeOpacity={0.8}
+onPress={() => router.push(`/recipe/${recipe.id}`)}      activeOpacity={0.8}
     >
       <View style={recipeCardStyles.imageContainer}>
         <Image

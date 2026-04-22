@@ -58,17 +58,21 @@ const HomeScreen = () => {
   };
 
   const loadCategoryData = async (category) => {
-    try {
-      const meals = await MealAPI.filterByCategory(category);
-      const transformedMeals = meals
-        .map((meal) => MealAPI.transformMealData(meal))
-        .filter((meal) => meal !== null);
-      setRecipes(transformedMeals);
-    } catch (error) {
-      console.error("Error loading category data:", error);
-      setRecipes([]);
-    }
-  };
+try {
+    const meals = await MealAPI.filterByCategory(category);
+    const transformedMeals = meals.map((meal) => ({
+      id: meal.idMeal,
+      title: meal.strMeal,
+      image: meal.strMealThumb,
+      cookTime: "30 minutes",
+      servings: 4,
+    })).filter(Boolean);
+    setRecipes(transformedMeals);
+  } catch (error) {
+    console.error("Error loading category data:", error);
+    setRecipes([]);
+  }
+};
 
   const handleCategorySelect = async (category) => {
     setSelectedCategory(category);
