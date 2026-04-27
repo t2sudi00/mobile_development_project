@@ -1,8 +1,8 @@
-import { View, Text, Alert, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, Alert, ScrollView, TouchableOpacity, Linking } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-expo";
-import { API_URL } from "../../constants/api";
+import { API_BASE_URL } from "../../constants/api";
 import { MealAPI } from "../../services/mealAPI";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import { Image } from "expo-image";
@@ -12,8 +12,6 @@ import { LinearGradient } from "expo-linear-gradient";
 import { COLORS } from "../../constants/colors";
 
 import { Ionicons } from "@expo/vector-icons";
-import { WebView } from "react-native-webview";
-
 const RecipeDetailScreen = () => {
   const { id: recipeId } = useLocalSearchParams();
   const router = useRouter();
@@ -29,7 +27,7 @@ const RecipeDetailScreen = () => {
   useEffect(() => {
     const checkIfSaved = async () => {
       try {
-        const response = await fetch(`${API_URL}/favorites/${userId}`);
+        const response = await fetch(`${API_BASE_URL}/favorites/${userId}`);
         const favorites = await response.json();
         const isRecipeSaved = favorites.some((fav) => fav.recipeId === parseInt(recipeId));
         setIsSaved(isRecipeSaved);
@@ -75,7 +73,7 @@ const RecipeDetailScreen = () => {
     try {
       if (isSaved) {
         // remove from favorites
-        const response = await fetch(`${API_URL}/favorites/${userId}/${recipeId}`, {
+        const response = await fetch(`${API_BASE_URL}/favorites/${userId}/${recipeId}`, {
           method: "DELETE",
         });
         if (!response.ok) throw new Error("Failed to remove recipe");
@@ -83,7 +81,7 @@ const RecipeDetailScreen = () => {
         setIsSaved(false);
       } else {
         // add to favorites
-        const response = await fetch(`${API_URL}/favorites`, {
+        const response = await fetch(`${API_BASE_URL}/favorites`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -194,29 +192,34 @@ const RecipeDetailScreen = () => {
             </View>
           </View>
 
-          {recipe.youtubeUrl && (
-            <View style={recipeDetailStyles.sectionContainer}>
-              <View style={recipeDetailStyles.sectionTitleRow}>
-                <LinearGradient
-                  colors={["#FF0000", "#CC0000"]}
-                  style={recipeDetailStyles.sectionIcon}
-                >
-                  <Ionicons name="play" size={16} color={COLORS.white} />
-                </LinearGradient>
+       {recipe.youtubeUrl && (
+  <View style={recipeDetailStyles.sectionContainer}>
+    <View style={recipeDetailStyles.sectionTitleRow}>
+      <LinearGradient
+        colors={["#FF0000", "#CC0000"]}
+        style={recipeDetailStyles.sectionIcon}
+      >
+        <Ionicons name="play" size={16} color={COLORS.white} />
+      </LinearGradient>
+      <Text style={recipeDetailStyles.sectionTitle}>Video Tutorial</Text>
+    </View>
 
-                <Text style={recipeDetailStyles.sectionTitle}>Video Tutorial</Text>
-              </View>
-
-              <View style={recipeDetailStyles.videoCard}>
-                <WebView
-                  style={recipeDetailStyles.webview}
-                  source={{ uri: getYouTubeEmbedUrl(recipe.youtubeUrl) }}
-                  allowsFullscreenVideo
-                  mediaPlaybackRequiresUserAction={false}
-                />
-              </View>
-            </View>
-          )}
+    <TouchableOpacity
+      onPress={() => Linking.openURL(recipe.youtubeUrl)}
+      style={recipeDetailStyles.videoCard}
+      activeOpacity={0.8}
+    >
+      <Image
+        source={{ uri: `https://img.youtube.com/vi/${recipe.youtubeUrl.split("v=")[1]}/hqdefault.jpg` }}
+        style={{ width: "100%", height: "100%" }}
+        contentFit="cover"
+      />
+      <View style={recipeDetailStyles.playOverlay}>
+        <Ionicons name="play-circle" size={64} color={COLORS.white} />
+      </View>
+    </TouchableOpacity>
+  </View>
+)}
 
           {/* INGREDIENTS SECTION */}
           <View style={recipeDetailStyles.sectionContainer}>
